@@ -2,7 +2,7 @@
   "name": "ai-chatter",
   "displayName": "AI Chatter",
   "description": "Connect your Cursor AI to Telegram and code from anywhere!",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "author": "Yuri Konoplev (j0k)",
   "copyright": "Copyright (c) 2025 Yuri Konoplev (j0k)",
   "publisher": "aichatter",

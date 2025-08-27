@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2025-08-27
+
+### Added
+- 📚 **Enhanced Usage Documentation**: Detailed examples for all commands including terminal commands with arguments
+- 🔧 **Advanced Terminal Examples**: Step-by-step guide for using `/test_command workbench.action.terminal.sendSequence`
+- 💡 **Pro Tips & Best Practices**: Comprehensive guidance for command execution and troubleshooting
+- 📖 **Better Command Examples**: Real-world scenarios and workflow examples
+- 🎯 **Argument Handling Examples**: Detailed examples of commands that require arguments
+
+### Changed
+- Updated `/version` command to show v0.3.3 and recent features
+- Enhanced `/help` command with all v0.3.3 capabilities
+- Improved `/usage` command with detailed terminal command examples
+- Better documentation for complex command usage scenarios
+
+---
+
 ## [0.3.2] - 2025-08-27
 
 ### Added

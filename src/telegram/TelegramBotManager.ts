@@ -333,7 +333,7 @@ export class TelegramBotManager {
 
     // Format help message for Telegram
     private formatHelpMessage(): string {
-        let help = `🤖 **AI-Chatter Help & Commands**\n\n`;
+        let help = `🤖 **AI-Chatter v0.3.3 Help & Commands**\n\n`;
         help += `Welcome to AI-Chatter! Here are all available commands:\n\n`;
         
         help += `**📱 Basic Commands**\n`;
@@ -383,7 +383,7 @@ export class TelegramBotManager {
         help += `**🌐 More Information**\n`;
         help += `• **GitHub Repository**: [https://github.com/j0k/ai_chatter](https://github.com/j0k/ai_chatter)\n`;
         help += `• **Documentation**: Check README.md for detailed guides\n`;
-        help += `• **Version**: Currently running v0.3.1\n`;
+        help += `• **Version**: Currently running v0.3.3\n`;
         help += `• **Support**: Open issues on GitHub\n\n`;
         
         help += `**💡 Quick Start**\n`;
@@ -456,6 +456,27 @@ export class TelegramBotManager {
         usage += `→ Install Node.js dependencies\n`;
         usage += `→ Manage project packages\n`;
         usage += `→ Update project libraries\n\n`;
+
+        usage += `**🔧 Advanced Terminal Commands with Arguments**\n`;
+        usage += `**Example: Execute "ls -al" and get results**\n`;
+        usage += `\`/test_command workbench.action.terminal.sendSequence\`\n`;
+        usage += `→ This command can take arguments like:\n`;
+        usage += `→ \`{"text": "ls -la\\n"}\`\n`;
+        usage += `→ The \\n creates a new line (like pressing Enter)\n`;
+        usage += `→ Result: Terminal executes "ls -la" and shows output\n\n`;
+        
+        usage += `**More Terminal Command Examples**\n`;
+        usage += `\`/test_command workbench.action.terminal.sendSequence\`\n`;
+        usage += `→ Arguments: \`{"text": "pwd\\n"}\` → Show current directory\n`;
+        usage += `→ Arguments: \`{"text": "git status\\n"}\` → Check Git status\n`;
+        usage += `→ Arguments: \`{"text": "npm run build\\n"}\` → Build project\n`;
+        usage += `→ Arguments: \`{"text": "echo 'Hello World'\\n"}\` → Print message\n\n`;
+        
+        usage += `**💡 Pro Tips for Terminal Commands**\n`;
+        usage += `• Always use \\n at the end to execute the command\n`;
+        usage += `• Use quotes around text with spaces: \`{"text": "git commit -m 'Update'\\n"}\`\n`;
+        usage += `• Escape special characters: \\n for newline, \\t for tab\n`;
+        usage += `• Chain commands: \`{"text": "cd /path && ls -la\\n"}\`\n\n`;
 
         usage += `**🎯 Advanced Commands**\n`;
         usage += `\`/cheat WWWDDD hello\`\n`;
@@ -1335,9 +1356,9 @@ export class TelegramBotManager {
         }
     }
 
-    // Get version information
+    // Get version information - Updated for v0.3.3
     private getVersionInfo(): string {
-        const version = '0.2.15';
+        const version = '0.3.3';
         const buildDate = new Date().toISOString().split('T')[0];
         
         let versionInfo = `🤖 **AI Chatter Version Information**\n\n`;
@@ -1347,19 +1368,19 @@ export class TelegramBotManager {
         versionInfo += `**🌐 Repository**: [GitHub](https://github.com/j0k/ai_chatter)\n\n`;
         
         versionInfo += `**📋 Recent Features**\n`;
-        versionInfo += `• v0.2.15: Fixed cheat command DOM modification and active editor targeting\n`;
-        versionInfo += `• v0.2.14: Enhanced DOM search and injection capabilities\n`;
-        versionInfo += `• v0.2.13: Version info and advanced text manipulation\n`;
-        versionInfo += `• v0.2.12: Active element messaging (/msgactive)\n`;
-        versionInfo += `• v0.2.11: Direct messaging (/msg)\n`;
-        versionInfo += `• v0.2.10: Restart button and bot management\n`;
-        versionInfo += `• v0.2.9: Tabs command and enhanced help\n\n`;
+        versionInfo += `• v0.3.3: Enhanced usage documentation with detailed examples\n`;
+        versionInfo += `• v0.3.2: File sending to Telegram with /send_file\n`;
+        versionInfo += `• v0.3.1: Complete commands export with /debug_commands_txt\n`;
+        versionInfo += `• v0.3.0: Direct Cursor AI chat integration\n`;
+        versionInfo += `• v0.2.17: Debug commands for AI chat discovery\n`;
+        versionInfo += `• v0.2.16: Enhanced webview handling for cheat command\n`;
+        versionInfo += `• v0.2.15: Fixed cheat command DOM modification\n\n`;
         
-        versionInfo += `**🔧 v0.2.15 Fixes**\n`;
-        versionInfo += `• Fixed cheat command not adding text after found patterns\n`;
-        versionInfo += `• Enhanced active editor content modification\n`;
-        versionInfo += `• Improved webview DOM manipulation success rate\n`;
-        versionInfo += `• Better error handling and success notifications\n\n`;
+        versionInfo += `**🚀 v0.3.3 Enhancements**\n`;
+        versionInfo += `• Enhanced usage documentation with detailed examples\n`;
+        versionInfo += `• Improved help system with all v0.3.3 features\n`;
+        versionInfo += `• Better command examples and troubleshooting\n`;
+        versionInfo += `• Detailed terminal command usage examples\n\n`;
         
         versionInfo += `**🚀 Use /help for all available commands**\n`;
         versionInfo += `**📚 Use /usage for detailed examples**`;
@@ -2633,7 +2654,7 @@ export class TelegramBotManager {
             // Send file to Telegram
             if (this.bot) {
                 const sentFile = await this.bot.sendDocument(telegramChatId, tempFilePath, {
-                    caption: `📁 ${fileName}\n📊 Size: ${fileSizeKB}KB\n🤖 Generated by AI Chatter v0.3.2\n📅 ${new Date().toISOString()}`
+                    caption: `📁 ${fileName}\n📊 Size: ${fileSizeKB}KB\n🤖 Generated by AI Chatter v0.3.3\n📅 ${new Date().toISOString()}`
                 });
                 
                 // Clean up temporary file
