@@ -7,6 +7,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.17] - 2025-08-27
+
+### Added
+- 🔍 **Debug Commands**: New `/debug_commands` to discover available AI/chat commands
+- 🧪 **Command Testing**: New `/test_command <command>` to test specific VS Code commands
+- 🎯 **AI Command Discovery**: Find all available Cursor AI and chat-related commands
+- 📊 **Command Analysis**: Comprehensive list of available VS Code commands
+
+### Changed
+- Enhanced debugging capabilities for discovering Cursor AI integration
+- Better command discovery and testing functionality
+- Improved troubleshooting for AI chat access
+
+---
+
 ## [0.2.16] - 2025-08-27
 
 ### Added

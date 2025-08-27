@@ -2076,6 +2076,51 @@ export class TelegramBotManager {
             return;
         }
 
+        // Debug command to find available AI/chat commands
+        if (messageText === '/debug_commands') {
+            try {
+                const commands = await vscode.commands.getCommands();
+                const aiCommands = commands.filter(cmd => 
+                    cmd.includes('ai') || 
+                    cmd.includes('chat') || 
+                    cmd.includes('cursor') ||
+                    cmd.includes('aichat') ||
+                    cmd.includes('workbench')
+                );
+                
+                let message = `🔍 **Available AI/Chat Commands** (${aiCommands.length} found):\n\n`;
+                aiCommands.slice(0, 20).forEach((cmd, index) => {
+                    message += `${index + 1}. \`${cmd}\`\n`;
+                });
+                
+                if (aiCommands.length > 20) {
+                    message += `\n... and ${aiCommands.length - 20} more commands`;
+                }
+                
+                await this.bot?.sendMessage(telegramChatId, message, { parse_mode: 'Markdown' });
+            } catch (error) {
+                await this.bot?.sendMessage(telegramChatId, `❌ Error getting commands: ${error}`);
+            }
+            return;
+        }
+
+        // Test specific Cursor AI commands
+        if (messageText.startsWith('/test_command ')) {
+            const commandName = messageText.substring(14); // Remove '/test_command ' prefix
+            try {
+                await this.bot?.sendMessage(telegramChatId, `🔄 Testing command: \`${commandName}\``);
+                
+                const result = await vscode.commands.executeCommand(commandName);
+                
+                await this.bot?.sendMessage(telegramChatId, 
+                    `✅ Command executed successfully!\n\n**Command**: \`${commandName}\`\n**Result**: ${result || 'No return value'}`);
+            } catch (error) {
+                await this.bot?.sendMessage(telegramChatId, 
+                    `❌ Command failed: \`${commandName}\`\n\n**Error**: ${error}`);
+            }
+            return;
+        }
+
         // Add message to history
         this.addMessageToHistory(username, messageText, 'telegram');
         
