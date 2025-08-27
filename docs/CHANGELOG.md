@@ -7,6 +7,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-08-27
+
+### Added
+- 🔌 **Plugin Ecosystem**: Complete plugin system for extending AI Chatter functionality
+- 📦 **Plugin Manager**: Centralized plugin registration, management, and execution
+- 🌤️ **Weather Plugin**: Built-in weather information and forecasting capabilities
+- 🧮 **Calculator Plugin**: Mathematical calculations and unit conversions
+- 🎯 **Plugin Commands**: New commands for plugin management and status
+- 🔄 **Dynamic Plugin Loading**: Hot-reload and plugin lifecycle management
+- 📊 **Plugin Status Monitoring**: Real-time plugin health and command availability
+
+### Changed
+- Enhanced command system to support plugin-based commands
+- Updated help system to include all plugin ecosystem features
+- Improved message handling with plugin command priority
+- Better extensibility for future plugin development
+
+---
+
 ## [0.3.3] - 2025-08-27
 
 ### Added
@@ -390,7 +409,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🌐 Web interface
 
 #### v1.2.0
-- 🔌 Plugin ecosystem
+- ✅ **COMPLETED**: Plugin ecosystem
 - 📱 Mobile app companion
 - 🤝 Team collaboration features
 

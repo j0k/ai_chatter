@@ -3,6 +3,9 @@ import * as vscode from 'vscode';
 import { ConfigurationManager } from '../utils/ConfigurationManager';
 import { TerminalCommandHandler, TerminalCommandResult } from '../utils/TerminalCommandHandler';
 import { ContextSizeHandler, ContextSizeInfo } from '../utils/ContextSizeHandler';
+import { PluginManager } from '../plugins/PluginManager';
+import { WeatherPlugin } from '../plugins/builtin/WeatherPlugin';
+import { CalculatorPlugin } from '../plugins/builtin/CalculatorPlugin';
 
 export interface ChatSession {
     chatId: string;
@@ -18,6 +21,7 @@ export class TelegramBotManager {
     private configurationManager: ConfigurationManager;
     private terminalCommandHandler: TerminalCommandHandler;
     private contextSizeHandler: ContextSizeHandler;
+    private pluginManager: PluginManager; // v1.2.0: Plugin ecosystem
     private activeChatSessions: Map<string, ChatSession> = new Map();
     private onMessageReceived: ((username: string, message: string) => void) | null = null;
     private messageHistory: Array<{
@@ -39,6 +43,30 @@ export class TelegramBotManager {
         this.configurationManager = configurationManager;
         this.terminalCommandHandler = new TerminalCommandHandler();
         this.contextSizeHandler = new ContextSizeHandler();
+        this.pluginManager = new PluginManager(); // v1.2.0: Initialize plugin manager
+        
+        // Register built-in plugins
+        this.initializeBuiltinPlugins();
+    }
+
+    // v1.2.0: Initialize built-in plugins
+    private async initializeBuiltinPlugins(): Promise<void> {
+        try {
+            console.log('[AI-CHATTER v1.2.0] Initializing built-in plugins...');
+            
+            // Register Weather Plugin
+            const weatherPlugin = new WeatherPlugin();
+            await this.pluginManager.registerPlugin(weatherPlugin);
+            
+            // Register Calculator Plugin
+            const calculatorPlugin = new CalculatorPlugin();
+            await this.pluginManager.registerPlugin(calculatorPlugin);
+            
+            console.log('[AI-CHATTER v1.2.0] Built-in plugins initialized successfully');
+            
+        } catch (error) {
+            console.error('[AI-CHATTER v1.2.0] Error initializing plugins:', error);
+        }
     }
 
     // Register callback for when messages are received
@@ -361,6 +389,15 @@ export class TelegramBotManager {
         help += `• \`/debug_commands_txt\` - Generate complete commands list file\n`;
         help += `• \`/test_command <command>\` - Test specific VS Code command\n`;
         help += `• \`/send_file <filename>\` - Send file to Telegram chat\n\n`;
+        
+        help += `**🔌 Plugin Ecosystem Commands** (v1.2.0)\n`;
+        help += `• \`/plugins\` - Show plugin status and information\n`;
+        help += `• \`/plugin_commands\` - List all available plugin commands\n`;
+        help += `• \`/reload_plugins\` - Reload all plugins\n`;
+        help += `• \`/weather <city>\` - Get weather information\n`;
+        help += `• \`/forecast <city> [days]\` - Get weather forecast\n`;
+        help += `• \`/calc <expression>\` - Perform calculations\n`;
+        help += `• \`/convert <value> <from> to <to>\` - Convert units\n\n`;
         
         help += `**💬 Chat Integration**\n`;
         help += `• Enable AI-Chatter in Cursor AI chat tabs\n`;
@@ -2236,6 +2273,38 @@ export class TelegramBotManager {
             return;
         }
 
+        // v1.2.0: Plugin ecosystem commands
+        if (messageText === '/plugins') {
+            try {
+                const status = this.pluginManager.getPluginStatus();
+                await this.bot?.sendMessage(telegramChatId, status, { parse_mode: 'Markdown' });
+            } catch (error) {
+                await this.bot?.sendMessage(telegramChatId, `❌ Error getting plugin status: ${error}`);
+            }
+            return;
+        }
+
+        if (messageText === '/plugin_commands') {
+            try {
+                const commands = this.pluginManager.getAvailableCommands();
+                await this.bot?.sendMessage(telegramChatId, commands, { parse_mode: 'Markdown' });
+            } catch (error) {
+                await this.bot?.sendMessage(telegramChatId, `❌ Error getting plugin commands: ${error}`);
+            }
+            return;
+        }
+
+        if (messageText === '/reload_plugins') {
+            try {
+                await this.bot?.sendMessage(telegramChatId, `🔄 Reloading all plugins...`);
+                await this.pluginManager.reloadPlugins();
+                await this.bot?.sendMessage(telegramChatId, `✅ All plugins reloaded successfully!`);
+            } catch (error) {
+                await this.bot?.sendMessage(telegramChatId, `❌ Error reloading plugins: ${error}`);
+            }
+            return;
+        }
+
         // Test specific Cursor AI commands - Enhanced for v0.3.1
         if (messageText.startsWith('/test_command ')) {
             const commandName = messageText.substring(14); // Remove '/test_command ' prefix
@@ -2321,6 +2390,25 @@ export class TelegramBotManager {
                 await this.sendFallbackMessage(chatMessage, username, telegramChatId);
             }
             return;
+        }
+
+        // v1.2.0: Try to execute plugin command first
+        if (messageText.startsWith('/')) {
+            const commandParts = messageText.substring(1).split(' ');
+            const commandName = commandParts[0];
+            const args = commandParts.slice(1);
+            
+            // Check if this is a plugin command
+            const pluginResult = await this.pluginManager.executePluginCommand(commandName, args, username, telegramChatId.toString());
+            
+            if (pluginResult.success) {
+                // Plugin command executed successfully
+                await this.bot?.sendMessage(telegramChatId, pluginResult.message, { parse_mode: 'Markdown' });
+                
+                // Add to history
+                this.addMessageToHistory(username, `Plugin Command: ${messageText}`, 'telegram');
+                return;
+            }
         }
 
         // Add message to history
