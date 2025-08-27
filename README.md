@@ -5,9 +5,20 @@
 [![GitHub](https://img.shields.io/badge/GitHub-j0k%2Fai__chatter-blue?style=flat-square&logo=github)](https://github.com/j0k/ai_chatter)
 [![License](https://img.shields.io/badge/License-MIT%20WITH%20ATTRIBUTION-green?style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.2.15-orange?style=flat-square)](docs/CHANGELOG.md)
+[![Status](https://img.shields.io/badge/Status-TESTING%20PHASE-red?style=flat-square)](#important-testing-phase)
 [![Built with Cursor AI](https://img.shields.io/badge/Built%20with-Cursor%20AI-purple?style=flat-square)](https://cursor.sh)
 
 > **Built entirely with Cursor AI** - This project was coded, developed, and built using Cursor AI, demonstrating the power of AI-assisted development.
+
+## ⚠️ **IMPORTANT: TESTING PHASE**
+
+> **🚨 This extension is currently in TESTING PHASE and may not work properly**
+> 
+> - **Status**: Experimental/Testing - Not production ready
+> - **Known Issues**: Several features may not function as expected
+> - **UI Integration**: The AI-Chatter checkbox in message tabs is not working
+> - **Recommendation**: Use for testing and development purposes only
+> - **Contributions**: Welcome! Help improve and fix issues
 
 A powerful VS Code extension that bridges the gap between your Cursor AI workspace and Telegram, allowing you to interact with your AI assistant from your phone while coding on your laptop.
 
@@ -44,6 +55,9 @@ A powerful VS Code extension that bridges the gap between your Cursor AI workspa
 
 ## 🚀 **Quick Start**
 
+### **⚠️ Testing Phase Notice**
+> **This extension is in testing phase and may have issues. Use for development/testing purposes only.**
+
 ### **Prerequisites**
 - VS Code or Cursor AI
 - Telegram account
@@ -55,6 +69,11 @@ A powerful VS Code extension that bridges the gap between your Cursor AI workspa
 3. **Configure Bot**: Set your `TELEGRAM_BOT_TOKEN`
 4. **Add Users**: Configure authorized Telegram usernames
 5. **Start Bot**: Enable AI Chatter in your workspace
+
+### **⚠️ Known Issues**
+- **UI Integration**: AI-Chatter checkbox in message tabs is not working
+- **Message Flow**: Some features may not function as expected
+- **Testing Required**: Comprehensive testing and bug fixes needed
 
 ### **First Steps**
 1. **Open Configuration**: `Ctrl+Shift+P` → "AI Chatter: Open Configuration"
