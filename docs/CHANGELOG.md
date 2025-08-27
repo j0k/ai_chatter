@@ -7,6 +7,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.16] - 2025-08-27
+
+### Added
+- 🔍 **Enhanced Webview Detection**: Better logging and feedback for webview panel detection
+- 📝 **Improved Error Messages**: More helpful error messages for cheat command failures
+- 🎯 **Better User Guidance**: Clear explanations of what was searched and tips for success
+
+### Fixed
+- 🚨 **Webview Panel Handling**: Fixed duplicate code and improved webview panel processing
+- 🔧 **Method Return Values**: All DOM modification methods now properly return results
+- 📊 **Result Tracking**: Better tracking of replacements across different modification methods
+
+### Changed
+- Enhanced cheat command error messages with detailed explanations
+- Improved logging for webview panel detection and processing
+- Better user feedback when no webview panels are found
+- Cleaner code structure and error handling
+
+---
+
 ## [0.2.15] - 2025-08-27
 
 ### Added

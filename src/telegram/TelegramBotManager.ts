@@ -1455,7 +1455,10 @@ export class TelegramBotManager {
                 
                 return { success: true, message };
             } else {
-                return { success: false, error: `No occurrences of "${searchText}" found in any open documents or DOM elements` };
+                return { 
+                    success: false, 
+                    error: `No occurrences of "${searchText}" found in any open documents or DOM elements\n\n**What was searched**:\n• Open text documents (files)\n• Webview panels (if any exist)\n• Active editor content\n\n**Tip**: Make sure you have text files open with the content you want to modify` 
+                };
             }
 
         } catch (error) {
@@ -1481,21 +1484,31 @@ export class TelegramBotManager {
             // Combine all webview sources
             const allWebviews = [...webviewPanels, ...extensionWebviews];
 
-            for (const webviewUri of allWebviews) {
-                try {
-                    const results = await this.modifyWebviewDOM(webviewUri, searchText, addText);
-                    totalReplacements += results.replacements;
-                    if (results.replacements > 0) {
-                        modifiedElements++;
+            if (allWebviews.length === 0) {
+                console.log('[CHEAT] No webview panels found for DOM manipulation');
+            } else {
+                console.log(`[CHEAT] Found ${allWebviews.length} webview panels for DOM manipulation`);
+                
+                for (const webviewUri of allWebviews) {
+                    try {
+                        const results = await this.modifyWebviewDOM(webviewUri, searchText, addText);
+                        totalReplacements += results.replacements;
+                        if (results.replacements > 0) {
+                            modifiedElements++;
+                        }
+                    } catch (webviewError) {
+                        console.error(`[CHEAT] Error processing webview ${webviewUri}:`, webviewError);
+                        continue;
                     }
-                } catch (webviewError) {
-                    console.error(`[CHEAT] Error processing webview ${webviewUri}:`, webviewError);
-                    continue;
                 }
             }
 
             // Try to inject script into active webviews for DOM manipulation
-            await this.injectDOMScript(searchText, addText);
+            const webviewResults = await this.injectDOMScript(searchText, addText);
+            totalReplacements += webviewResults.replacements || 0;
+            if (webviewResults.replacements > 0) {
+                modifiedElements++;
+            }
 
             // NEW: Try to modify active editor content directly
             const activeEditorResults = await this.modifyActiveEditorContent(searchText, addText);
@@ -1563,7 +1576,9 @@ export class TelegramBotManager {
     }
 
     // Inject DOM manipulation script into active webviews
-    private async injectDOMScript(searchText: string, addText: string): Promise<void> {
+    private async injectDOMScript(searchText: string, addText: string): Promise<{replacements: number}> {
+        let replacements = 0;
+        
         try {
             // Create a command to inject DOM script
             const command = `ai-chatter.injectDOMScript`;
@@ -1574,15 +1589,20 @@ export class TelegramBotManager {
                 await vscode.commands.executeCommand(command, args);
             } catch (cmdError) {
                 console.log('[CHEAT] DOM injection command not available, trying alternative method');
-                await this.alternativeDOMModification(searchText, addText);
+                const result = await this.alternativeDOMModification(searchText, addText);
+                replacements = result.replacements || 0;
             }
         } catch (error) {
             console.error('[CHEAT] Error injecting DOM script:', error);
         }
+        
+        return { replacements };
     }
 
     // Alternative DOM modification method
-    private async alternativeDOMModification(searchText: string, addText: string): Promise<void> {
+    private async alternativeDOMModification(searchText: string, addText: string): Promise<{replacements: number}> {
+        let replacements = 0;
+        
         try {
             // Try to find and modify text in the active editor
             const activeEditor = vscode.window.activeTextEditor;
@@ -1603,7 +1623,8 @@ export class TelegramBotManager {
                     edit.replace(document.uri, fullRange, newContent);
                     await vscode.workspace.applyEdit(edit);
                     
-                    console.log(`[CHEAT] Alternative method: Modified active editor with ${matches.length} replacements`);
+                    replacements = matches.length;
+                    console.log(`[CHEAT] Alternative method: Modified active editor with ${replacements} replacements`);
                 }
             }
 
@@ -1613,6 +1634,8 @@ export class TelegramBotManager {
         } catch (error) {
             console.error('[CHEAT] Error in alternative DOM modification:', error);
         }
+        
+        return { replacements };
     }
 
     // Send message to webview panels
