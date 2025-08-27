@@ -1,0 +1,18 @@
+# AI Chatter Configuration Example
+# Copy this file to .vscode/ai-chatter.yml and customize it
+
+telegram:
+  # Your bot token from @BotFather
+  bot_token: "YOUR_BOT_TOKEN_HERE"
+  
+  # List of authorized Telegram usernames (max 10)
+  authorized_users:
+    - "username1"
+    - "username2"
+    - "username3"
+  
+  # Maximum number of authorized users
+  max_users: 10
+  
+  # Future feature: Admin group for version 2.0
+  # admin_group: "your_admin_group"

@@ -1,0 +1,135 @@
+{
+  "name": "ai-chatter",
+  "displayName": "AI Chatter",
+  "description": "Connect your Cursor AI to Telegram and code from anywhere!",
+  "version": "0.2.15",
+  "author": "Yuri Konoplev (j0k)",
+  "copyright": "Copyright (c) 2025 Yuri Konoplev (j0k)",
+  "publisher": "aichatter",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Chat",
+    "Productivity"
+  ],
+  "keywords": [
+    "ai",
+    "cursor",
+    "telegram",
+    "bot",
+    "chat",
+    "coding",
+    "remote"
+  ],
+  "main": "./dist/extension.js",
+      "activationEvents": [
+        "onCommand:ai-chatter.configure",
+        "onCommand:ai-chatter.start",
+        "onCommand:ai-chatter.stop",
+        "onCommand:ai-chatter.status",
+        "onCommand:ai-chatter.toggleChat",
+        "onCommand:ai-chatter.toggleMessageTab",
+        "onCommand:ai-chatter.sendResponse"
+    ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "ai-chatter.configure",
+        "title": "AI Chatter: Configure",
+        "category": "AI Chatter"
+      },
+      {
+        "command": "ai-chatter.start",
+        "title": "AI Chatter: Start Bot",
+        "category": "AI Chatter"
+      },
+      {
+        "command": "ai-chatter.stop",
+        "title": "AI Chatter: Stop Bot",
+        "category": "AI Chatter"
+      },
+      {
+        "command": "ai-chatter.status",
+        "title": "AI Chatter: Show Status",
+        "category": "AI Chatter"
+      },
+      {
+        "command": "ai-chatter.toggleChat",
+        "title": "AI Chatter: Toggle for Current Chat",
+        "category": "AI Chatter"
+      },
+      {
+        "command": "ai-chatter.toggleMessageTab",
+        "title": "AI Chatter: Toggle for Message Tab",
+        "category": "AI Chatter"
+      },
+      {
+        "command": "ai-chatter.sendResponse",
+        "title": "AI Chatter: Send Current Response to Telegram",
+        "category": "AI Chatter"
+      }
+    ],
+    "configuration": {
+      "title": "AI Chatter",
+      "properties": {
+        "ai-chatter.telegram.botToken": {
+          "type": "string",
+          "default": "",
+          "description": "Telegram Bot Token from @BotFather"
+        },
+        "ai-chatter.telegram.authorizedUsers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "List of authorized Telegram usernames (max 10)"
+        },
+        "ai-chatter.telegram.maxUsers": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Maximum number of authorized users"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^18.15.0",
+    "@types/node-telegram-bot-api": "^0.64.10",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "eslint": "^8.37.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5",
+    "vsce": "^2.7.0",
+    "webpack": "^5.78.0",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "node-telegram-bot-api": "^0.61.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/j0k/ai_chatter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/j0k/ai_chatter/issues"
+  },
+  "homepage": "https://github.com/j0k/ai_chatter#readme",
+      "license": "MIT WITH ATTRIBUTION"
+}
