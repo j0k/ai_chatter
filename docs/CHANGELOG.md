@@ -7,6 +7,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-08-27
+
+### Added
+- 🚀 **Direct Cursor AI Chat Integration**: New `/chat <message>` command for direct AI chat
+- 🔍 **Smart Command Discovery**: Automatically tries multiple AI chat commands
+- 📝 **Enhanced Message History**: Thread tracking, message types, and user roles
+- 🧵 **Message Threading System**: Support for conversation threads
+- 👤 **User Identification**: Enhanced user role detection and tracking
+- 📊 **Comprehensive Logging**: Detailed logging and output channel integration
+- 🚨 **Error Handling**: Robust error handling with fallback methods
+- 🔄 **Fallback Messaging**: File-based messaging when direct chat fails
+
+### Changed
+- Enhanced message history from 10 to 20 messages
+- Improved error handling and user feedback
+- Better integration with Cursor AI's native commands
+- Enhanced debugging and troubleshooting capabilities
+
+---
+
 ## [0.2.17] - 2025-08-27
 
 ### Added
@@ -309,7 +329,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🚀 **v1.0.0**: Production ready with admin groups
 - 🎯 **v0.5.0**: Media support (images, files)
 - 🔒 **v0.4.0**: Workspace access and security
-- 💬 **v0.3.0**: Full Cursor AI integration
 - ⚙️ **v0.2.0**: User management and UI
 - 🏗️ **v0.1.0**: Core infrastructure
 

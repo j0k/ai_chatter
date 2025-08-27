@@ -20,8 +20,20 @@ export class TelegramBotManager {
     private contextSizeHandler: ContextSizeHandler;
     private activeChatSessions: Map<string, ChatSession> = new Map();
     private onMessageReceived: ((username: string, message: string) => void) | null = null;
-    private messageHistory: Array<{username: string; message: string; timestamp: number; type: 'telegram' | 'ai_response'}> = [];
-    private readonly maxHistorySize = 10;
+    private messageHistory: Array<{
+        username: string; 
+        message: string; 
+        timestamp: number; 
+        type: 'telegram' | 'ai_response';
+        threadId?: string;
+        messageType?: string;
+        userRole?: string;
+        messageLength?: number;
+        hasCode?: boolean;
+        hasLinks?: boolean;
+    }> = [];
+    private readonly maxHistorySize = 20; // Increased for v0.3.0
+    private currentThreadId: string = 'main'; // v0.3.0: Thread tracking
 
     constructor(configurationManager: ConfigurationManager) {
         this.configurationManager = configurationManager;
@@ -1757,24 +1769,50 @@ export class TelegramBotManager {
         return codeExtensions.some(ext => fileName.endsWith(ext));
     }
 
-    // Add message to history
+    // Add message to history - Enhanced for v0.3.0
     private addMessageToHistory(username: string, message: string, type: 'telegram' | 'ai_response'): void {
         const historyEntry = {
             username,
             message,
             timestamp: Date.now(),
-            type
+            type,
+            threadId: this.currentThreadId,
+            messageType: this.getMessageType(message),
+            userRole: this.getUserRole(username),
+            messageLength: message.length,
+            hasCode: message.includes('```'),
+            hasLinks: message.includes('http://') || message.includes('https://')
         };
         
         // Add to history
         this.messageHistory.push(historyEntry);
         
-        // Keep only the last maxHistorySize messages
+        // Keep only the last maxHistorySize messages (increased for v0.3.0)
         if (this.messageHistory.length > this.maxHistorySize) {
             this.messageHistory = this.messageHistory.slice(-this.maxHistorySize);
         }
         
-        console.log(`[HISTORY] Added ${type} message from @${username}: "${this.truncateMessage(message, 50)}"`);
+        console.log(`[HISTORY v0.3.0] Added ${type} message from @${username} (${historyEntry.userRole}): "${this.truncateMessage(message, 50)}"`);
+        
+        // Log to output channel for comprehensive tracking
+        this.logToOutput(`[History v0.3.0] @${username} (${type}): ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`);
+    }
+
+    // v0.3.0: Enhanced message type detection
+    private getMessageType(message: string): string {
+        if (message.startsWith('/')) return 'command';
+        if (message.includes('http://') || message.includes('https://')) return 'link';
+        if (message.length > 200) return 'long_message';
+        if (message.includes('```')) return 'code_block';
+        if (message.includes('error') || message.includes('Error')) return 'error';
+        if (message.includes('success') || message.includes('Success')) return 'success';
+        return 'text';
+    }
+
+    // v0.3.0: Enhanced user role detection
+    private getUserRole(username: string): string {
+        // For now, return a basic role - can be enhanced later
+        return 'user';
     }
 
     // Add AI response to history
@@ -2121,6 +2159,34 @@ export class TelegramBotManager {
             return;
         }
 
+        // Direct Cursor AI Chat Integration - v0.3.0
+        if (messageText.startsWith('/chat ')) {
+            const chatMessage = messageText.substring(6); // Remove '/chat ' prefix
+            try {
+                await this.bot?.sendMessage(telegramChatId, `🔄 Sending to Cursor AI Chat: "${chatMessage}"`);
+                
+                const success = await this.sendToCursorAIChat(chatMessage, username);
+                
+                if (success) {
+                    await this.bot?.sendMessage(telegramChatId, 
+                        `✅ Message sent to Cursor AI Chat!\n\n**Message**: "${chatMessage}"\n**User**: @${username}`);
+                } else {
+                    await this.bot?.sendMessage(telegramChatId, 
+                        `❌ Failed to send to Cursor AI Chat. Trying fallback method...`);
+                    
+                    // Fallback to file-based messaging
+                    await this.sendFallbackMessage(chatMessage, username, telegramChatId);
+                }
+            } catch (error) {
+                await this.bot?.sendMessage(telegramChatId, 
+                    `❌ Error sending to Cursor AI Chat: ${error}\n\nTrying fallback method...`);
+                
+                // Fallback to file-based messaging
+                await this.sendFallbackMessage(chatMessage, username, telegramChatId);
+            }
+            return;
+        }
+
         // Add message to history
         this.addMessageToHistory(username, messageText, 'telegram');
         
@@ -2206,5 +2272,105 @@ export class TelegramBotManager {
 
     isBotRunning(): boolean {
         return this.isRunning;
+    }
+
+    // v0.3.0: Enhanced Cursor AI Chat Integration
+    private async sendToCursorAIChat(message: string, username: string): Promise<boolean> {
+        try {
+            console.log(`[AI-CHATTER v0.3.0] Sending to Cursor AI Chat: "${message}" from @${username}`);
+            
+            // Try multiple known Cursor AI chat commands
+            const chatCommands = [
+                'aichat.show-ai-chat',
+                'workbench.action.chat.open',
+                'cursor.ai.chat.open',
+                'ai.chat.open',
+                'chat.open',
+                'workbench.action.ai.chat.open'
+            ];
+
+            for (const command of chatCommands) {
+                try {
+                    console.log(`[AI-CHATTER v0.3.0] Trying command: ${command}`);
+                    
+                    // Check if command exists
+                    const allCommands = await vscode.commands.getCommands();
+                    if (!allCommands.includes(command)) {
+                        console.log(`[AI-CHATTER v0.3.0] Command not available: ${command}`);
+                        continue;
+                    }
+
+                    // Execute the command to open chat
+                    await vscode.commands.executeCommand(command);
+                    console.log(`[AI-CHATTER v0.3.0] Successfully opened chat with: ${command}`);
+                    
+                    // Wait for chat to be ready
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Save original clipboard
+                    const originalClipboard = await vscode.env.clipboard.readText();
+                    console.log(`[AI-CHATTER v0.3.0] Original clipboard saved`);
+                    
+                    // Set clipboard with formatted message
+                    const formattedMessage = `[Telegram @${username}] ${message}`;
+                    await vscode.env.clipboard.writeText(formattedMessage);
+                    console.log(`[AI-CHATTER v0.3.0] Clipboard set with message: "${formattedMessage}"`);
+                    
+                    // Paste the message
+                    await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+                    console.log(`[AI-CHATTER v0.3.0] Message pasted successfully`);
+                    
+                    // Restore original clipboard
+                    await vscode.env.clipboard.writeText(originalClipboard);
+                    console.log(`[AI-CHATTER v0.3.0] Original clipboard restored`);
+                    
+                    // Add to history
+                    this.addMessageToHistory(username, `Chat: ${message}`, 'telegram');
+                    
+                    return true;
+                    
+                } catch (cmdError) {
+                    console.log(`[AI-CHATTER v0.3.0] Command failed: ${command} - ${cmdError}`);
+                    continue;
+                }
+            }
+            
+            console.log(`[AI-CHATTER v0.3.0] All chat commands failed, falling back to file-based messaging`);
+            return false;
+            
+        } catch (error) {
+            console.error(`[AI-CHATTER v0.3.0] Error in sendToCursorAIChat:`, error);
+            return false;
+        }
+    }
+
+    // v0.3.0: Fallback message handling
+    private async sendFallbackMessage(message: string, username: string, telegramChatId: number): Promise<void> {
+        try {
+            console.log(`[AI-CHATTER v0.3.0] Using fallback method for message: "${message}" from @${username}`);
+            
+            // Create a temporary file with the message
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const fileName = `telegram_message_${timestamp}.txt`;
+            
+            const document = await vscode.workspace.openTextDocument({
+                content: `[Telegram @${username}] ${message}\n\nTimestamp: ${new Date().toISOString()}\nStatus: Ready for Cursor AI processing`,
+                language: 'plaintext'
+            });
+            
+            await vscode.window.showTextDocument(document);
+            
+            // Send confirmation
+            await this.bot?.sendMessage(telegramChatId, 
+                `📝 Message saved to file: \`${fileName}\`\n\n**Message**: "${message}"\n**User**: @${username}\n\nYou can now copy this text into Cursor AI chat manually.`);
+            
+            // Add to history
+            this.addMessageToHistory(username, `Fallback: ${message}`, 'telegram');
+            
+        } catch (error) {
+            console.error(`[AI-CHATTER v0.3.0] Error in fallback method:`, error);
+            await this.bot?.sendMessage(telegramChatId, 
+                `❌ Fallback method also failed: ${error}`);
+        }
     }
 }
