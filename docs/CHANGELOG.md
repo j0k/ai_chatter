@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-08-27
+
+### Added
+- 📄 **Complete Commands Export**: New `/debug_commands_txt` command generates comprehensive commands list file
+- 🔍 **Enhanced Command Testing**: Improved `/test_command` with execution time, result formatting, and troubleshooting
+- 🎯 **Command Type Detection**: Automatic categorization of commands (AI/Chat, Cursor AI, Workbench, Editor, etc.)
+- 📊 **Command Validation**: Pre-execution checks for command existence and similar command suggestions
+- 🚨 **Better Error Handling**: Enhanced error messages with troubleshooting tips and similar command suggestions
+
+### Changed
+- Enhanced `/test_command` with execution time tracking and result formatting
+- Improved command discovery with better filtering and categorization
+- Enhanced help system to include all v0.3.1 features
+- Better user guidance for command execution and troubleshooting
+
+---
+
 ## [0.3.0] - 2025-08-27
 
 ### Added

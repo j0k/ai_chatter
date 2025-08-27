@@ -353,7 +353,13 @@ export class TelegramBotManager {
         help += `• \`/users\` - List authorized users\n\n`;
 
         help += `**🎯 Advanced Commands**\n`;
-        help += `• \`/cheat <search> <add>\` - Find text and add content after it\n\n`;
+        help += `• \`/cheat <search> <add>\` - Find text and add content after it\n`;
+        help += `• \`/chat <message>\` - Send message directly to Cursor AI chat\n\n`;
+        
+        help += `**🔍 Debug & Discovery Commands**\n`;
+        help += `• \`/debug_commands\` - Find available AI/chat commands\n`;
+        help += `• \`/debug_commands_txt\` - Generate complete commands list file\n`;
+        help += `• \`/test_command <command>\` - Test specific VS Code command\n\n`;
         
         help += `**💬 Chat Integration**\n`;
         help += `• Enable AI-Chatter in Cursor AI chat tabs\n`;
@@ -376,7 +382,7 @@ export class TelegramBotManager {
         help += `**🌐 More Information**\n`;
         help += `• **GitHub Repository**: [https://github.com/j0k/ai_chatter](https://github.com/j0k/ai_chatter)\n`;
         help += `• **Documentation**: Check README.md for detailed guides\n`;
-        help += `• **Version**: Currently running v0.2.9\n`;
+        help += `• **Version**: Currently running v0.3.1\n`;
         help += `• **Support**: Open issues on GitHub\n\n`;
         
         help += `**💡 Quick Start**\n`;
@@ -1815,6 +1821,21 @@ export class TelegramBotManager {
         return 'user';
     }
 
+    // v0.3.1: Enhanced command type detection
+    private getCommandType(commandName: string): string {
+        if (commandName.includes('ai') || commandName.includes('chat')) return 'AI/Chat';
+        if (commandName.includes('cursor')) return 'Cursor AI';
+        if (commandName.includes('workbench')) return 'Workbench';
+        if (commandName.includes('editor')) return 'Editor';
+        if (commandName.includes('terminal')) return 'Terminal';
+        if (commandName.includes('file')) return 'File System';
+        if (commandName.includes('git')) return 'Git';
+        if (commandName.includes('search')) return 'Search';
+        if (commandName.includes('view')) return 'View';
+        if (commandName.includes('window')) return 'Window';
+        return 'General';
+    }
+
     // Add AI response to history
     public addAIResponseToHistory(username: string, response: string): void {
         this.addMessageToHistory(username, response, 'ai_response');
@@ -2142,19 +2163,86 @@ export class TelegramBotManager {
             return;
         }
 
-        // Test specific Cursor AI commands
+        // v0.3.1: Enhanced command discovery with descriptions and file export
+        if (messageText === '/debug_commands_txt') {
+            try {
+                await this.bot?.sendMessage(telegramChatId, `🔄 Generating comprehensive command list with descriptions...`);
+                
+                const result = await this.generateCommandsFile();
+                
+                if (result.success) {
+                    await this.bot?.sendMessage(telegramChatId, 
+                        `✅ **Commands File Generated Successfully!**\n\n` +
+                        `📁 **File**: \`${result.fileName}\`\n` +
+                        `📊 **Total Commands**: ${result.totalCommands}\n` +
+                        `🔍 **AI/Chat Commands**: ${result.aiCommands}\n` +
+                        `📝 **File Size**: ${result.fileSize}\n\n` +
+                        `The file is now open in your editor. You can copy any command and use /test_command <command_name> to execute it!`);
+                } else {
+                    await this.bot?.sendMessage(telegramChatId, 
+                        `❌ **Failed to generate commands file**: ${result.error}`);
+                }
+            } catch (error) {
+                await this.bot?.sendMessage(telegramChatId, `❌ Error generating commands file: ${error}`);
+            }
+            return;
+        }
+
+        // Test specific Cursor AI commands - Enhanced for v0.3.1
         if (messageText.startsWith('/test_command ')) {
             const commandName = messageText.substring(14); // Remove '/test_command ' prefix
             try {
                 await this.bot?.sendMessage(telegramChatId, `🔄 Testing command: \`${commandName}\``);
                 
+                // Check if command exists first
+                const allCommands = await vscode.commands.getCommands();
+                const commandExists = allCommands.includes(commandName);
+                
+                if (!commandExists) {
+                    await this.bot?.sendMessage(telegramChatId, 
+                        `❌ **Command Not Found**: \`${commandName}\`\n\n` +
+                        `🔍 **Available similar commands**:\n` +
+                        `${allCommands.filter(cmd => cmd.includes(commandName.split('.')[0])).slice(0, 5).map(cmd => `• \`${cmd}\``).join('\n')}\n\n` +
+                        `💡 **Tip**: Use /debug_commands_txt to get a complete list of all commands.`);
+                    return;
+                }
+                
+                // Execute the command
+                const startTime = Date.now();
                 const result = await vscode.commands.executeCommand(commandName);
+                const executionTime = Date.now() - startTime;
+                
+                // Format the result
+                let resultText = 'No return value';
+                if (result !== undefined && result !== null) {
+                    if (typeof result === 'string') {
+                        resultText = result.length > 200 ? result.substring(0, 200) + '...' : result;
+                    } else if (typeof result === 'object') {
+                        resultText = JSON.stringify(result, null, 2).substring(0, 200) + (JSON.stringify(result).length > 200 ? '...' : '');
+                    } else {
+                        resultText = String(result);
+                    }
+                }
                 
                 await this.bot?.sendMessage(telegramChatId, 
-                    `✅ Command executed successfully!\n\n**Command**: \`${commandName}\`\n**Result**: ${result || 'No return value'}`);
+                    `✅ **Command Executed Successfully!**\n\n` +
+                    `**Command**: \`${commandName}\`\n` +
+                    `**Execution Time**: ${executionTime}ms\n` +
+                    `**Result**: \`${resultText}\`\n\n` +
+                    `🎯 **Command Type**: ${this.getCommandType(commandName)}`);
+                
+                // Add to history
+                this.addMessageToHistory(username, `Test Command: ${commandName}`, 'telegram');
+                
             } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
                 await this.bot?.sendMessage(telegramChatId, 
-                    `❌ Command failed: \`${commandName}\`\n\n**Error**: ${error}`);
+                    `❌ **Command Failed**: \`${commandName}\`\n\n` +
+                    `**Error**: ${errorMessage}\n\n` +
+                    `💡 **Troubleshooting**:\n` +
+                    `• Check if the command exists with /debug_commands\n` +
+                    `• Try similar commands with /debug_commands_txt\n` +
+                    `• Some commands may require specific context or permissions`);
             }
             return;
         }
@@ -2371,6 +2459,105 @@ export class TelegramBotManager {
             console.error(`[AI-CHATTER v0.3.0] Error in fallback method:`, error);
             await this.bot?.sendMessage(telegramChatId, 
                 `❌ Fallback method also failed: ${error}`);
+        }
+    }
+
+    // v0.3.1: Generate comprehensive commands file with descriptions
+    private async generateCommandsFile(): Promise<{
+        success: boolean;
+        fileName?: string;
+        totalCommands?: number;
+        aiCommands?: number;
+        fileSize?: string;
+        error?: string;
+    }> {
+        try {
+            console.log(`[AI-CHATTER v0.3.1] Generating comprehensive commands file...`);
+            
+            // Get all available commands
+            const allCommands = await vscode.commands.getCommands();
+            const totalCommands = allCommands.length;
+            
+            // Filter AI/Chat related commands
+            const aiCommands = allCommands.filter(cmd => 
+                cmd.includes('ai') || 
+                cmd.includes('chat') || 
+                cmd.includes('cursor') ||
+                cmd.includes('aichat') ||
+                cmd.includes('workbench') ||
+                cmd.includes('editor') ||
+                cmd.includes('terminal')
+            );
+            
+            // Create timestamp for unique filename
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const fileName = `vscode_commands_${timestamp}.txt`;
+            
+            // Generate file content
+            let content = `# VS Code / Cursor AI Commands - Generated by AI Chatter v0.3.1\n`;
+            content += `# Generated: ${new Date().toISOString()}\n`;
+            content += `# Total Commands: ${totalCommands}\n`;
+            content += `# AI/Chat Commands: ${aiCommands.length}\n\n`;
+            
+            content += `## 🔍 ALL COMMANDS (${totalCommands} total)\n\n`;
+            allCommands.forEach((cmd, index) => {
+                content += `${index + 1}. ${cmd}\n`;
+            });
+            
+            content += `\n## 🚀 AI/CHAT RELATED COMMANDS (${aiCommands.length} found)\n\n`;
+            aiCommands.forEach((cmd, index) => {
+                content += `${index + 1}. ${cmd}\n`;
+            });
+            
+            content += `\n## 📋 HOW TO USE\n\n`;
+            content += `1. Copy any command from above\n`;
+            content += `2. Use: /test_command <command_name>\n`;
+            content += `3. Example: /test_command workbench.action.chat.open\n\n`;
+            
+            content += `## 🎯 RECOMMENDED AI/CHAT COMMANDS\n\n`;
+            const recommendedCommands = [
+                'workbench.action.chat.open',
+                'aichat.show-ai-chat',
+                'cursor.ai.chat.open',
+                'ai.chat.open',
+                'chat.open',
+                'workbench.action.ai.chat.open',
+                'workbench.action.terminal.new',
+                'workbench.action.files.newUntitledFile'
+            ];
+            
+            recommendedCommands.forEach((cmd, index) => {
+                const exists = allCommands.includes(cmd);
+                content += `${index + 1}. ${cmd} ${exists ? '✅' : '❌'}\n`;
+            });
+            
+            // Create and open the file
+            const document = await vscode.workspace.openTextDocument({
+                content: content,
+                language: 'plaintext'
+            });
+            
+            await vscode.window.showTextDocument(document);
+            
+            // Get file size
+            const fileSize = `${Math.round(content.length / 1024)}KB`;
+            
+            console.log(`[AI-CHATTER v0.3.1] Commands file generated: ${fileName} (${fileSize})`);
+            
+            return {
+                success: true,
+                fileName: fileName,
+                totalCommands: totalCommands,
+                aiCommands: aiCommands.length,
+                fileSize: fileSize
+            };
+            
+        } catch (error) {
+            console.error(`[AI-CHATTER v0.3.1] Error generating commands file:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error)
+            };
         }
     }
 }
