@@ -54,6 +54,9 @@ export class ConfigurationUI {
                     case 'restartTelegramBot':
                         await this.handleRestartTelegramBot(panel.webview);
                         break;
+                    case 'stopTelegramBot':
+                        await this.handleStopTelegramBot(panel.webview);
+                        break;
                 }
             }
         );
@@ -273,13 +276,18 @@ export class ConfigurationUI {
                             </button>
                             <span id="restartStatus" class="status-indicator" style="margin-left: 10px; padding: 5px 10px; border-radius: 4px; font-size: 12px;"></span>
                         </div>
+                        <div class="form-group">
+                            <button class="button danger" onclick="stopTelegramBot()">
+                                🛑 Stop Telegram Bot
+                            </button>
+                            <span id="stopStatus" class="status-indicator" style="margin-left: 10px; padding: 5px 10px; border-radius: 4px; font-size: 12px;"></span>
+                        </div>
                         <div class="help-text">
-                            <p><strong>💡 What this does:</strong></p>
+                            <p><strong>💡 What these do:</strong></p>
                             <ul style="margin: 5px 0; padding-left: 20px;">
-                                <li>Stops the current Telegram bot instance</li>
-                                <li>Reloads all configuration and settings</li>
-                                <li>Restarts the bot with fresh state</li>
-                                <li>Useful for troubleshooting and applying changes</li>
+                                <li><strong>Restart:</strong> Stops and restarts the bot with fresh configuration</li>
+                                <li><strong>Stop:</strong> Completely stops the Telegram bot (no messages will be received)</li>
+                                <li>Useful for troubleshooting, applying changes, or temporarily disabling the bot</li>
                             </ul>
                         </div>
                     </div>
@@ -378,6 +386,19 @@ export class ConfigurationUI {
                         });
                     }
 
+                    function stopTelegramBot() {
+                        const statusElement = document.getElementById('stopStatus');
+                        
+                        // Show stopping status
+                        statusElement.textContent = '🛑 Stopping...';
+                        statusElement.style.backgroundColor = 'var(--vscode-notificationsWarningBackground)';
+                        statusElement.style.color = 'var(--vscode-notificationsWarningForeground)';
+                        
+                        vscode.postMessage({
+                            command: 'stopTelegramBot'
+                        });
+                    }
+
                     function sendTestMessage() {
                         const message = document.getElementById('testMessage').value.trim();
                         const statusElement = document.getElementById('sendStatus');
@@ -454,6 +475,23 @@ export class ConfigurationUI {
                                     restartStatusElement.textContent = '';
                                     restartStatusElement.style.backgroundColor = '';
                                     restartStatusElement.style.color = '';
+                                }, 8000);
+                                break;
+                            case 'updateStopStatus':
+                                const stopStatusElement = document.getElementById('stopStatus');
+                                stopStatusElement.textContent = message.status;
+                                if (message.isError) {
+                                    stopStatusElement.style.backgroundColor = 'var(--vscode-errorForeground)';
+                                    stopStatusElement.style.color = 'white';
+                                } else {
+                                    stopStatusElement.style.backgroundColor = 'var(--vscode-notificationsWarningBackground)';
+                                    stopStatusElement.style.color = 'var(--vscode-notificationsWarningForeground)';
+                                }
+                                // Clear status after 8 seconds
+                                setTimeout(() => {
+                                    stopStatusElement.textContent = '';
+                                    stopStatusElement.style.backgroundColor = '';
+                                    stopStatusElement.style.color = '';
                                 }, 8000);
                                 break;
                         }
@@ -606,6 +644,39 @@ export class ConfigurationUI {
             
             // Show error notification
             vscode.window.showErrorMessage(`Failed to restart Telegram bot: ${error}`);
+        }
+    }
+
+    private async handleStopTelegramBot(webview: vscode.Webview): Promise<void> {
+        try {
+            // Show stopping notification
+            vscode.window.showInformationMessage('🛑 Stopping Telegram Bot...');
+            
+            // Send stop command to the extension
+            await vscode.commands.executeCommand('ai-chatter.stop');
+            
+            // Update webview status
+            webview.postMessage({ 
+                command: 'updateStopStatus', 
+                status: '✅ Bot stopped successfully!',
+                isError: false
+            });
+            
+            // Show success notification
+            vscode.window.showInformationMessage('✅ Telegram Bot stopped successfully!');
+            
+        } catch (error) {
+            console.error('Error stopping Telegram bot:', error);
+            
+            // Update webview status with error
+            webview.postMessage({ 
+                command: 'updateStopStatus', 
+                status: `❌ Error stopping bot: ${error}`,
+                isError: true
+            });
+            
+            // Show error notification
+            vscode.window.showErrorMessage(`Failed to stop Telegram bot: ${error}`);
         }
     }
 }

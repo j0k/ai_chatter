@@ -1393,9 +1393,9 @@ export class TelegramBotManager {
         }
     }
 
-    // Get version information - Updated for v0.3.3
+    // Get version information - Updated for v1.2.1
     private getVersionInfo(): string {
-        const version = '0.3.3';
+        const version = '1.2.1';
         const buildDate = new Date().toISOString().split('T')[0];
         
         let versionInfo = `🤖 **AI Chatter Version Information**\n\n`;
@@ -1405,19 +1405,19 @@ export class TelegramBotManager {
         versionInfo += `**🌐 Repository**: [GitHub](https://github.com/j0k/ai_chatter)\n\n`;
         
         versionInfo += `**📋 Recent Features**\n`;
+        versionInfo += `• v1.2.1: Stop Telegram Bot functionality in Configuration UI\n`;
+        versionInfo += `• v1.2.0: Plugin ecosystem with Weather and Calculator plugins\n`;
         versionInfo += `• v0.3.3: Enhanced usage documentation with detailed examples\n`;
         versionInfo += `• v0.3.2: File sending to Telegram with /send_file\n`;
         versionInfo += `• v0.3.1: Complete commands export with /debug_commands_txt\n`;
         versionInfo += `• v0.3.0: Direct Cursor AI chat integration\n`;
-        versionInfo += `• v0.2.17: Debug commands for AI chat discovery\n`;
-        versionInfo += `• v0.2.16: Enhanced webview handling for cheat command\n`;
-        versionInfo += `• v0.2.15: Fixed cheat command DOM modification\n\n`;
+        versionInfo += `• v0.2.17: Debug commands for AI chat discovery\n\n`;
         
-        versionInfo += `**🚀 v0.3.3 Enhancements**\n`;
-        versionInfo += `• Enhanced usage documentation with detailed examples\n`;
-        versionInfo += `• Improved help system with all v0.3.3 features\n`;
-        versionInfo += `• Better command examples and troubleshooting\n`;
-        versionInfo += `• Detailed terminal command usage examples\n\n`;
+        versionInfo += `**🚀 v1.2.1 Enhancements**\n`;
+        versionInfo += `• Added Stop Telegram Bot button in Configuration UI\n`;
+        versionInfo += `• Enhanced bot management with separate stop and restart functions\n`;
+        versionInfo += `• Improved user experience with clear status indicators\n`;
+        versionInfo += `• Better bot control for troubleshooting and maintenance\n\n`;
         
         versionInfo += `**🚀 Use /help for all available commands**\n`;
         versionInfo += `**📚 Use /usage for detailed examples**`;

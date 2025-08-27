@@ -54,33 +54,42 @@ global.vscode = mockVscode;
 global.TelegramBot = mockTelegramBot;
 
 // Test utilities
-export const createMockCommandResult = () => ({
-  success: true,
-  message: 'Test result',
-  data: {},
-  error: undefined,
-});
+export const createMockCommandResult = (overrides: any = {}) => {
+  const base = {
+    success: true,
+    message: 'Test result',
+    data: {},
+    error: undefined,
+  };
+  return Object.assign(base, overrides);
+};
 
-export const createMockCommand = () => ({
-  name: 'test',
-  description: 'Test command',
-  usage: '/test',
-  examples: ['/test'],
-  handler: jest.fn().mockResolvedValue(createMockCommandResult()),
-  requiresAuth: false,
-  adminOnly: false,
-});
+export const createMockCommand = (overrides: any = {}) => {
+  const base = {
+    name: 'test',
+    description: 'Test command',
+    usage: '/test',
+    examples: ['/test'],
+    handler: jest.fn().mockResolvedValue(createMockCommandResult()),
+    requiresAuth: false,
+    adminOnly: false,
+  };
+  return Object.assign(base, overrides);
+};
 
-export const createMockPlugin = () => ({
-  id: 'test-plugin',
-  name: 'Test Plugin',
-  version: '1.0.0',
-  description: 'A test plugin',
-  author: 'Test Author',
-  commands: [],
-  onActivate: jest.fn(),
-  onDeactivate: jest.fn(),
-});
+export const createMockPlugin = (overrides: any = {}) => {
+  const base = {
+    id: 'test-plugin',
+    name: 'Test Plugin',
+    version: '1.0.0',
+    description: 'A test plugin',
+    author: 'Test Author',
+    commands: [],
+    onActivate: jest.fn().mockResolvedValue(undefined),
+    onDeactivate: jest.fn().mockResolvedValue(undefined),
+  };
+  return Object.assign(base, overrides);
+};
 
 // Console mock for cleaner test output
 const originalConsole = Object.assign({}, console);

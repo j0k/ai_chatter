@@ -4,7 +4,7 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-j0k%2Fai__chatter-blue?style=flat-square&logo=github)](https://github.com/j0k/ai_chatter)
 [![License](https://img.shields.io/badge/License-MIT%20WITH%20ATTRIBUTION-green?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.2.0-orange?style=flat-square)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-1.2.1-orange?style=flat-square)](docs/CHANGELOG.md)
 [![Status](https://img.shields.io/badge/Status-TESTING%20PHASE-red?style=flat-square)](#important-testing-phase)
 [![Built with Cursor AI](https://img.shields.io/badge/Built%20with-Cursor%20AI-purple?style=flat-square)](https://cursor.sh)
 
