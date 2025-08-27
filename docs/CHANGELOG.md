@@ -7,6 +7,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-08-27
+
+### Added
+- 📤 **File Sending to Telegram**: New `/send_file <filename>` command sends files directly to Telegram
+- 📁 **Automatic File Discovery**: Automatically finds files in workspace by name
+- 🔍 **File Size Validation**: Checks file size against Telegram's 50MB limit
+- 📱 **Rich File Captions**: Includes file info, size, and generation details
+- 🧹 **Temporary File Cleanup**: Automatically cleans up temporary files after sending
+
+### Changed
+- Enhanced `/debug_commands_txt` to suggest using `/send_file` for easy file sharing
+- Updated help system to include file sending capabilities
+- Improved file handling with better error messages and user guidance
+
+---
+
 ## [0.3.1] - 2025-08-27
 
 ### Added

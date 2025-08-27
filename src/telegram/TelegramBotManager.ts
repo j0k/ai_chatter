@@ -359,7 +359,8 @@ export class TelegramBotManager {
         help += `**🔍 Debug & Discovery Commands**\n`;
         help += `• \`/debug_commands\` - Find available AI/chat commands\n`;
         help += `• \`/debug_commands_txt\` - Generate complete commands list file\n`;
-        help += `• \`/test_command <command>\` - Test specific VS Code command\n\n`;
+        help += `• \`/test_command <command>\` - Test specific VS Code command\n`;
+        help += `• \`/send_file <filename>\` - Send file to Telegram chat\n\n`;
         
         help += `**💬 Chat Integration**\n`;
         help += `• Enable AI-Chatter in Cursor AI chat tabs\n`;
@@ -2177,13 +2178,39 @@ export class TelegramBotManager {
                         `📊 **Total Commands**: ${result.totalCommands}\n` +
                         `🔍 **AI/Chat Commands**: ${result.aiCommands}\n` +
                         `📝 **File Size**: ${result.fileSize}\n\n` +
-                        `The file is now open in your editor. You can copy any command and use /test_command <command_name> to execute it!`);
+                        `The file is now open in your editor. You can copy any command and use /test_command <command_name> to execute it!\n\n` +
+                        `💡 **NEW**: Use /send_file ${result.fileName} to send this file to Telegram!`);
                 } else {
                     await this.bot?.sendMessage(telegramChatId, 
                         `❌ **Failed to generate commands file**: ${result.error}`);
                 }
             } catch (error) {
                 await this.bot?.sendMessage(telegramChatId, `❌ Error generating commands file: ${error}`);
+            }
+            return;
+        }
+
+        // v0.3.2: Send file to Telegram
+        if (messageText.startsWith('/send_file ')) {
+            const fileName = messageText.substring(11); // Remove '/send_file ' prefix
+            try {
+                await this.bot?.sendMessage(telegramChatId, `📤 Sending file: \`${fileName}\` to Telegram...`);
+                
+                const result = await this.sendFileToTelegram(fileName, telegramChatId);
+                
+                if (result.success) {
+                    await this.bot?.sendMessage(telegramChatId, 
+                        `✅ **File Sent Successfully!**\n\n` +
+                        `📁 **File**: \`${fileName}\`\n` +
+                        `📊 **Size**: ${result.fileSize}\n` +
+                        `📱 **Sent to**: This Telegram chat\n\n` +
+                        `You can now download and view the file on your phone!`);
+                } else {
+                    await this.bot?.sendMessage(telegramChatId, 
+                        `❌ **Failed to send file**: ${result.error}`);
+                }
+            } catch (error) {
+                await this.bot?.sendMessage(telegramChatId, `❌ Error sending file: ${error}`);
             }
             return;
         }
@@ -2554,6 +2581,79 @@ export class TelegramBotManager {
             
         } catch (error) {
             console.error(`[AI-CHATTER v0.3.1] Error generating commands file:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error)
+            };
+        }
+    }
+
+    // v0.3.2: Send file to Telegram
+    private async sendFileToTelegram(fileName: string, telegramChatId: number): Promise<{
+        success: boolean;
+        fileSize?: string;
+        error?: string;
+    }> {
+        try {
+            console.log(`[AI-CHATTER v0.3.2] Sending file to Telegram: ${fileName}`);
+            
+            // Find the file in the workspace
+            const workspaceFiles = await vscode.workspace.findFiles(`**/${fileName}`, '**/node_modules/**');
+            
+            if (workspaceFiles.length === 0) {
+                return {
+                    success: false,
+                    error: `File not found: ${fileName}`
+                };
+            }
+            
+            const fileUri = workspaceFiles[0];
+            const filePath = fileUri.fsPath;
+            
+            // Read file content
+            const fileContent = await vscode.workspace.fs.readFile(fileUri);
+            const fileSize = fileContent.length;
+            const fileSizeKB = Math.round(fileSize / 1024);
+            
+            console.log(`[AI-CHATTER v0.3.2] File found: ${filePath} (${fileSizeKB}KB)`);
+            
+            // Check if file is too large for Telegram (50MB limit)
+            if (fileSize > 50 * 1024 * 1024) {
+                return {
+                    success: false,
+                    error: `File too large: ${fileSizeKB}KB (Telegram limit: 50MB)`
+                };
+            }
+            
+            // Create a temporary file with the content
+            const tempDir = require('os').tmpdir();
+            const tempFilePath = require('path').join(tempDir, fileName);
+            require('fs').writeFileSync(tempFilePath, fileContent);
+            
+            // Send file to Telegram
+            if (this.bot) {
+                const sentFile = await this.bot.sendDocument(telegramChatId, tempFilePath, {
+                    caption: `📁 ${fileName}\n📊 Size: ${fileSizeKB}KB\n🤖 Generated by AI Chatter v0.3.2\n📅 ${new Date().toISOString()}`
+                });
+                
+                // Clean up temporary file
+                require('fs').unlinkSync(tempFilePath);
+                
+                console.log(`[AI-CHATTER v0.3.2] File sent successfully: ${sentFile.document?.file_name}`);
+                
+                return {
+                    success: true,
+                    fileSize: `${fileSizeKB}KB`
+                };
+            } else {
+                return {
+                    success: false,
+                    error: 'Bot not running'
+                };
+            }
+            
+        } catch (error) {
+            console.error(`[AI-CHATTER v0.3.2] Error sending file to Telegram:`, error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : String(error)
